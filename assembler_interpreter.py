@@ -107,50 +107,56 @@ def set_up_commands():
         ';' : comment,
         '' : comment
     }
+
 def set_labels(program):
     global labels
     labels = {}
     for index, line in enumerate(program.split('\n')):
-        if line != '' and line[-1] == ':':
-            labels[line[:-1]] = index
+        if line != '' and ':' in line and "'" not in line[:line.index(':')+1]:
+            lbl = line[:line.index(':')]
+            labels[lbl] = index
     return labels
+
 def get_value(x, registers):
     if x in registers.keys():
         return registers[x]
     return int(x)
+
 def make_msg(string):
     import re
-    pattern = r"(', '|. |'.*?'|.)"
+    pattern = r"(', '|.|'.*?')"
     remove_comment = string[:string.index(';')].strip(' ') if ';' in string else string.strip(' ')
     message = re.findall(f"{pattern},", remove_comment) + re.findall(f",? {pattern}$", remove_comment)
     output = ''
     for word in message:
-        if word == ';':
-            break
-        elif word[0] == "'":  # if the word is a literal message, we join it with the ouput
+        if word[0] == "'":  # if the word is a literal message, we join it with the ouput
             output += word.strip("'")
         else:
             output += str(get_value(word, registers))
     return output
+
 def assembler_interpreter(program, timer = 1):
     set_up_commands()
     set_labels(program)
+    visuals = timer > 0
     global registers, total_lines, in_a_function, program_ended_successfully, line_number
     registers = {}
     total_lines = len(program.split('\n'))
     in_a_function = False
     program_ended_successfully = False
-    gui = program.split('\n')
-    gui = [line + ' '*10 for line in gui]
-    gui.append(f"registers: {registers}")
+    if visuals:
+        gui = program.split('\n')
+        gui = [line + ' '*10 for line in gui]
+        gui.append(f"registers: {registers}")
     line_number = 1
     while line_number < total_lines:
         line = program.split('\n')[line_number]
-        gui[line_number] += '*'
-        gui[-1] = f"registers: {registers}"
-        print('\n'*5)  # we center the program output (1)
-        print('\n'.join(gui))
-        gui[line_number] = gui[line_number].strip('*')
+        if visuals:
+            gui[line_number] += '*'
+            gui[-1] = f"registers: {registers}"
+            print('\n'*5)  # we center the program output (1)
+            print('\n'.join(gui))
+            gui[line_number] = gui[line_number].strip('*')
         if line != '':
             command, *args = line.strip(' ').strip('\t').split(' ')
             do_command  = commands[command]
@@ -159,13 +165,14 @@ def assembler_interpreter(program, timer = 1):
             else:
                 args = line
             do_command(args)
-        if not program_ended_successfully and line_number <= total_lines-1: print('\n'*5)  # and dont print if the program ended
+        if visuals and not program_ended_successfully and line_number < total_lines: print('\n'*5)  # and dont print if the program ended
         line_number += 1
         import time
         time.sleep(timer)
         sys.stdout.flush()
     if program_ended_successfully:
-        print('\n',output, '\n'*5)
+        if visuals: print('\n',output, '\n'*5)
+        else: print(output)
         return output
     return "Error. \nProgram ended with exit code -1"
 
@@ -179,7 +186,7 @@ call  proc_fib
 call  print
 end
 
-proc_fib:
+proc_fib: ; generic time label comment
     cmp   c, 2
     jl    func_0
     mov   b, d
