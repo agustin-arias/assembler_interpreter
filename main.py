@@ -1,111 +1,145 @@
 import sys
+# erase all lines in program and write your own assembly code.
+program = '''
+MOV   a, 8            ; value
+MOV   b, 0            ; next
+MOV   c, 0            ; counter
+MOV   d, 0            ; first
+MOV   e, 1            ; second
+CALL  proc_fib
+CALL  print
+END
+
+proc_fib: ; generic time label comment
+    CMP   c, 2
+    JL    func_0
+    MOV   b, d
+    ADD   b, e
+    MOV   d, e
+    MOV   e, b
+    INC   c
+    CMP   c, a
+    JLE   proc_fib
+    RET
+
+func_0:
+    MOV   b, c
+    INC   c
+    JMP   proc_fib
+
+print:
+    MSG   'Term ', a, ' of Fibonacci series is: ', b        ; output text
+    RET
+'''
+
+
 def set_up_commands():
-    global mov, inc, dec, add, sub, mul, div, jmp, cmp, jne, je, jge, jg, jle, jl, call, ret, msg, end, comment, commands
-    def mov(args):
+    global MOV, INC, DEC, ADD, SUB, MUL, DIV, JMP, CMP, JNE, JE, JGE, JG, JLE, JL, CALL, RET, MSG, END, COMMENT, commands
+    def MOV(args):
         x, y = args[0].strip(', '), args[1]
         registers[x] = get_value(y, registers)
-    def inc(args):
+    def INC(args):
         x = args[0]
         registers[x] += 1
-    def dec(args):
+    def DEC(args):
         x = args[0]
         registers[x] -= 1
-    def add(args):
+    def ADD(args):
         x, y = args[0].strip(', '), args[1]
         registers[x] += get_value(y, registers)
-    def sub(args):
+    def SUB(args):
         x, y = args[0].strip(', '), args[1]
         registers[x] -= get_value(y, registers)
-    def mul(args):
+    def MUL(args):
         x, y = args[0].strip(', '), args[1]
         registers[x] *= get_value(y, registers)
-    def div(args):
+    def DIV(args):
         x, y = args[0].strip(', '), args[1]
         registers[x] //= get_value(y, registers)
-    def jmp(args):
+    def JMP(args):
         global line_number
         lbl = args[0]
         line_number = labels[lbl]
-    def cmp(args):
+    def CMP(args):
         '''
-            cmp  = 0 if equal
-            cmp = 1 if x > y
-            cmp = -1 if x < y
+            CMP  = 0 if equal
+            CMP = 1 if x > y
+            CMP = -1 if x < y
         '''
         global compare
         x, y = args[0].strip(', '), args[1]
         x, y = get_value(x, registers), get_value(y, registers)
         compare = (x > y) - (x < y)
-    def jne(args):
+    def JNE(args):
         global line_number
         if compare != 0:
             lbl = args[0]
             line_number = labels[lbl]
-    def je(args):
+    def JE(args):
         global line_number
         if compare == 0:
             lbl = args[0]
             line_number = labels[lbl]
-    def jge(args):
+    def JGE(args):
         global line_number
         if compare >= 0:
             lbl = args[0]
             line_number = labels[lbl]
-    def jg(args):
+    def JG(args):
         global line_number
         if compare == 1:
             lbl = args[0]
             line_number = labels[lbl]
-    def jle(args):
+    def JLE(args):
         global line_number
         if compare <= 0:
             lbl = args[0]
             line_number = labels[lbl]
-    def jl(args):
+    def JL(args):
         global line_number
         if compare == -1:
             lbl = args[0]
             line_number = labels[lbl]
-    def call(args):
+    def CALL(args):
         global line_number, line_number_reference, in_a_function
         lbl = args[0]
         if not in_a_function:
             line_number_reference, in_a_function = line_number, True
         line_number = labels[lbl]
-    def ret(args):
+    def RET(args):
         global line_number, in_a_function
         line_number = line_number_reference
         in_a_function = False
-    def msg(args):
+    def MSG(args):
         global output
         output = make_msg(args)
-    def end(args):
+    def END(args):
         global line_number, program_ended_successfully
         program_ended_successfully = True
         line_number = total_lines
-    def comment(args): pass
+    def COMMENT(args): pass
     commands = {
-        'mov' : mov,
-        'inc' : inc,
-        'dec' : dec,
-        'add' : add,
-        'sub' : sub,
-        'mul' : mul,
-        'div' : div,
-        'jmp' : jmp,
-        'cmp' : cmp,
-        'jne' : jne,
-        'je' : je,
-        'jge' : jge,
-        'jg' : jg,
-        'jle' : jle,
-        'jl' : jl,
-        'call' : call,
-        'ret' : ret,
-        'msg' : msg,
-        'end' : end,
-        ';' : comment,
-        '' : comment
+        'MOV' : MOV,
+        'INC' : INC,
+        'DEC' : DEC,
+        'ADD' : ADD,
+        'SUB' : SUB,
+        'MUL' : MUL,
+        'DIV' : DIV,
+        'JMP' : JMP,
+        'CMP' : CMP,
+        'JNE' : JNE,
+        'JE' : JE,
+        'JGE' : JGE,
+        'JG' : JG,
+        'JLE' : JLE,
+        'JL' : JL,
+        'CALL' : CALL,
+        'RET' : RET,
+        'MSG' : MSG,
+        'END' : END,
+        ';' : COMMENT,
+        '' : COMMENT
     }
 
 def set_labels(program):
@@ -176,37 +210,7 @@ def assembler_interpreter(program, timer = 1):
         return output
     return "Error. \nProgram ended with exit code -1"
 
-program = '''
-mov   a, 8            ; value
-mov   b, 0            ; next
-mov   c, 0            ; counter
-mov   d, 0            ; first
-mov   e, 1            ; second
-call  proc_fib
-call  print
-end
 
-proc_fib: ; generic time label comment
-    cmp   c, 2
-    jl    func_0
-    mov   b, d
-    add   b, e
-    mov   d, e
-    mov   e, b
-    inc   c
-    cmp   c, a
-    jle   proc_fib
-    ret
-
-func_0:
-    mov   b, c
-    inc   c
-    jmp   proc_fib
-
-print:
-    msg   'Term ', a, ' of Fibonacci series is: ', b        ; output text
-    ret
-'''
 if len(sys.argv) == 1:
     assembler_interpreter(program)
 else:
