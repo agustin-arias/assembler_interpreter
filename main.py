@@ -194,7 +194,7 @@ def assembler_interpreter(program, timer = 1):
         if line != '':
             command, *args = line.strip(' ').strip('\t').split(' ')
             do_command  = commands[command]
-            if command != 'msg':
+            if command != 'MSG':
                 args = list(filter(lambda x : x!='', args))
             else:
                 args = line
