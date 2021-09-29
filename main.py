@@ -34,7 +34,7 @@ print:
 '''
 
 def main():
-    timer = int(input("\n\nChoose the speed of the execution from 0 to 10. (5 as default): "))/10
+    timer = float(input("\n\nChoose the speed of the execution from 0 to 10. (5 as default): "))/10
     assembler_interpreter(program, timer)
 
 def set_up_commands():
@@ -203,13 +203,12 @@ def assembler_interpreter(program, timer):
             else:
                 args = line
             do_command(args)
-        # if visuals and not program_ended_successfully and line_number < total_lines: print('\n'*5)  # and dont print if the program ended
         line_number += 1
         import time
         time.sleep(timer)
         sys.stdout.flush()
     if program_ended_successfully:
-        if visuals: print('\n',output, '\n'*5)
+        if visuals: print('\n',output)
         else: print(output)
         return output
     return "Error. \nProgram ended with exit code -1"
