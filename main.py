@@ -1,4 +1,5 @@
 import sys
+
 # erase all lines in program and write your own assembly code.
 program = '''
 MOV   a, 8            ; value
@@ -32,6 +33,9 @@ print:
     RET
 '''
 
+def main():
+    timer = int(input("\n\nChoose the speed of the execution from 0 to 10. (5 as default): "))/10
+    assembler_interpreter(program, timer)
 
 def set_up_commands():
     global MOV, INC, DEC, ADD, SUB, MUL, DIV, JMP, CMP, JNE, JE, JGE, JG, JLE, JL, CALL, RET, MSG, END, COMMENT, commands
@@ -169,7 +173,7 @@ def make_msg(string):
             output += str(get_value(word, registers))
     return output
 
-def assembler_interpreter(program, timer = 1):
+def assembler_interpreter(program, timer):
     set_up_commands()
     set_labels(program)
     visuals = timer > 0
@@ -199,7 +203,7 @@ def assembler_interpreter(program, timer = 1):
             else:
                 args = line
             do_command(args)
-        if visuals and not program_ended_successfully and line_number < total_lines: print('\n'*5)  # and dont print if the program ended
+        # if visuals and not program_ended_successfully and line_number < total_lines: print('\n'*5)  # and dont print if the program ended
         line_number += 1
         import time
         time.sleep(timer)
@@ -210,8 +214,5 @@ def assembler_interpreter(program, timer = 1):
         return output
     return "Error. \nProgram ended with exit code -1"
 
-
-if len(sys.argv) == 1:
-    assembler_interpreter(program)
-else:
-    assembler_interpreter(program, float(sys.argv[1]))
+if __name__ == '__main__':
+    main()
